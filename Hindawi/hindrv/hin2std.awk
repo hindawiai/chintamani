@@ -58,9 +58,9 @@ END	{
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | h2c | acii2hin) > hin.std");
 			else if (cc=="guroo>")
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | h2c | acii2hin) > hin.std");
-			else if (cc=="shrae_nnee>")
+			else if (cc=="shraee_nnee>")
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | h2cpp | acii2hin) > hin.std");
-			else if (cc=="shrae_nneeba_d_dha>")
+			else if (cc=="shraee_nneeba_d_dha>")
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | h2cpp | acii2hin) > hin.std");
 			else if (cc=="shab_da>")
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | h2l | acii2hin) > hin.std");

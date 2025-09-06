@@ -58,9 +58,9 @@ END	{
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | c2h | sed 's/_/__/g') | rmn2acii | acii2uni | iconv -futf16 -tutf8 > hin.uhin");
 			else if (cc=="guroo>")
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | c2h | sed 's/_/__/g') | rmn2acii | acii2uni | iconv -futf16 -tutf8 > hin.uhin");
-			else if (cc=="shrae_nnee>")
+			else if (cc=="shraee_nnee>")
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | cpp2h | sed 's/_/__/g') | rmn2acii | acii2uni | iconv -futf16 -tutf8 > hin.uhin");
-			else if (cc=="shrae_nneeba_d_dha>")
+			else if (cc=="shraee_nneeba_d_dha>")
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | cpp2h | sed 's/_/__/g') | rmn2acii | acii2uni | iconv -futf16 -tutf8 > hin.uhin");
 			else if (cc=="shab_da>")
 				system("(echo \"<shailee " cc "\"; cat tempfil012345.temphin | l2h | sed 's/_/__/g') | rmn2acii | acii2uni | iconv -futf16 -tutf8 > hin.uhin");
