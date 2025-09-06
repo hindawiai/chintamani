@@ -58,9 +58,9 @@ END	{
 				system("gurucc tempfil012345.temphin");
 			else if (cc=="guroo>")
 				system("gurucc tempfil012345.temphin");
-			else if (cc=="shrae_nnee>")
+			else if (cc=="shraee_nnee>")
 				system("shraenicc tempfil012345.temphin");
-			else if (cc=="shrae_nneeba_d_dha>")
+			else if (cc=="shraee_nneeba_d_dha>")
 				system("shraenicc tempfil012345.temphin");
 			else if (cc=="shab_da>")
 				system("shabdacc tempfil012345.temphin");
