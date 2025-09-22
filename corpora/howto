@@ -1,0 +1,2 @@
+wget https://ia801407.us.archive.org/31/items/PremchandKiKahaniyan-Hindi-MunshiPremchand/StoriesByPremchand.pdf
+pdftotext StoriesByPremchand.pdf
