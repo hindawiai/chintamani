@@ -18,16 +18,16 @@ clean_all:
 	rm qb2c
 
 bcpp:	bcpp.c
-	gcc -ansi -O2 -o bcpp bcpp.c
+	gcc -std=gnu89 -ansi -O2 -o bcpp bcpp.c
 
 qb2c:	qb2c.c
-	gcc -O2 -o qb2c qb2c.c -lm
+	gcc -std=gnu89 -O2 -o qb2c qb2c.c -lm
 
 calib:	calib.c
-	gcc -ansi -o calib calib.c 
+	gcc -std=gnu89 -ansi -o calib calib.c 
 
 x11:	x11int.c rotated.c gifencode.c gifdecode.c pickpalette.c
-	gcc -c -ansi -w -O2 x11int.c rotated.c gifencode.c gifdecode.c pickpalette.c
+	gcc -std=gnu89 -c -ansi -w -O2 x11int.c rotated.c gifencode.c gifdecode.c pickpalette.c
 	ar -cr libqbX11.a x11int.o rotated.o gifencode.o gifdecode.o pickpalette.o
 
 clean:	

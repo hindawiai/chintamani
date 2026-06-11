@@ -352,8 +352,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 4
-#define YY_END_OF_BUFFER 5
+#define YY_NUM_RULES 3
+#define YY_END_OF_BUFFER 4
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -361,28 +361,14 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static const flex_int16_t yy_accept[20] =
+static const flex_int16_t yy_accept[16] =
     {   0,
-        3,    3,    5,    4,    4,    3,    0,    0,    3,    0,
-        0,    0,    0,    2,    0,    0,    1,    2,    0
+        0,    0,    4,    3,    3,    3,    0,    0,    2,    0,
+        0,    0,    0,    1,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
     {   0,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    2,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    3,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    4,    4,    4,    4,    4,    4,
-        4,    4,    4,    4,    4,    4,    4,    4,    4,    4,
-        4,    4,    4,    4,    4,    4,    4,    4,    4,    4,
-        1,    5,    1,    2,    6,    1,    4,    4,    4,    4,
-
-        7,    4,    4,    4,    4,    4,    4,    4,    4,    4,
-        4,    4,    4,    4,    4,    4,    4,    4,    4,    4,
-        4,    4,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -390,48 +376,60 @@ static const YY_CHAR yy_ec[256] =
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    2,    3,    1,    1,
 
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    4,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    5,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    6,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1
     } ;
 
-static const YY_CHAR yy_meta[8] =
+static const YY_CHAR yy_meta[7] =
     {   0,
-        1,    2,    1,    3,    1,    3,    3
+        1,    2,    3,    4,    5,    1
     } ;
 
 static const flex_int16_t yy_base[23] =
     {   0,
-        0,    0,   27,   28,    5,    0,   10,   20,    0,   13,
-       22,   17,   14,   28,   11,    8,   28,    7,   28,    6,
-       18,   21
+        0,    5,   20,   21,    0,    0,   17,    0,   21,    0,
+       12,    0,    0,   21,   21,   11,   14,    5,    5,    6,
+        0,    0
     } ;
 
 static const flex_int16_t yy_def[23] =
     {   0,
-       19,    1,   19,   19,   19,   20,   21,   19,   20,   21,
-       19,   10,   22,   19,   10,   22,   19,   19,    0,   19,
-       19,   19
+       16,   16,   15,   15,   17,   18,   17,   19,   15,   20,
+       20,   21,   22,   15,    0,   15,   15,   15,   15,   15,
+       15,   15
     } ;
 
-static const flex_int16_t yy_nxt[36] =
+static const flex_int16_t yy_nxt[28] =
     {   0,
-        4,    4,    5,    6,    4,    6,    6,    7,    9,   14,
-       17,    8,   11,   18,   12,   11,   17,   12,   10,   15,
-       10,   16,   16,   16,   14,   13,   19,    3,   19,   19,
-       19,   19,   19,   19,   19
+       15,    5,   15,   14,   13,    6,    5,   11,   10,    8,
+        6,    4,    4,    4,    4,    4,    7,   12,    9,   15,
+        3,   15,   15,   15,   15,   15,   15
     } ;
 
-static const flex_int16_t yy_chk[36] =
+static const flex_int16_t yy_chk[28] =
     {   0,
-        1,    1,    1,    1,    1,    1,    1,    5,   20,   18,
-       16,    5,    7,   15,    7,   10,   13,   10,   21,   12,
-       21,   22,   22,   22,   11,    8,    3,   19,   19,   19,
-       19,   19,   19,   19,   19
+        0,    1,    0,   22,   21,    1,    2,   20,   19,   18,
+        2,   16,   16,   16,   16,   16,   17,   11,    7,    3,
+       15,   15,   15,   15,   15,   15,   15
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -448,53 +446,10 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "rmn2acii.lex"
-#line 2 "rmn2acii.lex"
-
-/*
-Copyright (C) 2003,2004,2005,2006 Abhishek Choudhary
-This file is part of the Romenagri Transliteration System.
-
-The Romenagri Transliteration System is free software; 
-you can redistribute it and/or modify it under the terms of the 
-GNU General Public License as published by the 
-Free Software Foundation; either version 2 of the License, or 
-(at your option) any later version.
-
-The Romenagri Transliteration System is distributed in the hope 
-that it will be useful, but WITHOUT ANY WARRANTY; without 
-even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-A PARTICULAR PURPOSE. See the GNU General Public License for 
-more details.
-
-You should have received a copy of the GNU General Public
-License along with this file; see the file COPYING. If
-not, write to the Free Software Foundation,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-*/
-
-/*
-Modifications: (Please maintain reverse chronological order)
-
-	dd-mmm-yyyy, Nature of modification,
-                        Name of modifier <alias>,
-			email adress of modifier
-
-	19-Jan-2006, Added the modifications section,
-                        Abhishek Choudhary <hi_pedler>,
-			choudhary@indicybers.net
-
-End of modifications.
-A-Za-z_0-9\,\.\!\@\#\$\%\^\&\*\(\)\_\-\=\+\\\|\;\:\'\"\/
-*/
-	
-#include "acii.h"
-#include "rmn2acii.h"
-
-char msg2[4096], *msg=msg2, hldtxt2[1024], *hldtxt=hldtxt2;
-
-#line 497 "lexyy.c"
-#line 498 "lexyy.c"
+#line 1 "tempfil0123.tmphin.lex"
+#line 2 "tempfil0123.tmphin.lex"
+#line 452 "lexyy.c"
+#line 453 "lexyy.c"
 
 #define INITIAL 0
 
@@ -711,9 +666,9 @@ YY_DECL
 		}
 
 	{
-#line 47 "rmn2acii.lex"
+#line 3 "tempfil0123.tmphin.lex"
 
-#line 717 "lexyy.c"
+#line 672 "lexyy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -740,13 +695,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 20 )
+				if ( yy_current_state >= 16 )
 					yy_c = yy_meta[yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 28 );
+		while ( yy_base[yy_current_state] != 21 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -771,27 +726,21 @@ do_action:	/* This label is used only to access EOF actions. */
 			goto yy_find_action;
 
 case 1:
-/* rule 1 can match eol */
 YY_RULE_SETUP
-#line 48 "rmn2acii.lex"
-{strcpy(hldtxt,yytext); hldtxt[strlen(hldtxt)-1]=0; printf("%s",hldtxt+3);}
+#line 4 "tempfil0123.tmphin.lex"
+{printf("ओ");}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 49 "rmn2acii.lex"
-{strcpy(hldtxt,yytext); hldtxt[strlen(hldtxt)-1]=0; printf("%s",hldtxt+1);}
+#line 5 "tempfil0123.tmphin.lex"
+{printf("ab*a");}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 50 "rmn2acii.lex"
-{strcpy(hldtxt,yytext); hldtxt[strlen(hldtxt)]=0; printf("%s",rmn2acii(hldtxt));}
-	YY_BREAK
-case 4:
-YY_RULE_SETUP
-#line 51 "rmn2acii.lex"
+#line 6 "tempfil0123.tmphin.lex"
 ECHO;
 	YY_BREAK
-#line 795 "lexyy.c"
+#line 744 "lexyy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1088,7 +1037,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 20 )
+			if ( yy_current_state >= 16 )
 				yy_c = yy_meta[yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
@@ -1116,11 +1065,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 20 )
+		if ( yy_current_state >= 16 )
 			yy_c = yy_meta[yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
-	yy_is_jam = (yy_current_state == 19);
+	yy_is_jam = (yy_current_state == 15);
 
 		return yy_is_jam ? 0 : yy_current_state;
 }
@@ -1796,6 +1745,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 51 "rmn2acii.lex"
+#line 6 "tempfil0123.tmphin.lex"
 
 
