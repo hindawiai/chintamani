@@ -3,7 +3,7 @@
 #include <stdio.h>
 #define YYSTYPE double
 
-int yyerror();
+int yyerror(char *);
 int yylex();
 %}
  
