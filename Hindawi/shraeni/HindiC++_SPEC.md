@@ -1,1317 +1,452 @@
-# HindiC++ Specification
+# HindiC++ Language Specification
 
-This document is generated from the Hindawi Shaili Shraeni translator sources in this repository.
+## 1. Scope
 
-## Source Files
+This document specifies HindiC++, the Hindawi Shaili Shraeni language implemented by the translator sources in this repository.
+
+HindiC++ is a source-to-source language. A conforming HindiC++ program is translated to C++ source by `h2cpp` and compiled by an implementation-provided C++ compiler through `shraenicc`.
+
+The normative implementation sources are:
 
 | Role | File |
 | --- | --- |
-| HindiC++ to C++ lexer spec | `Hindawi/shraeni/h2cpp.uhin` |
-| C++ to HindiC++ lexer spec | `Hindawi/shraeni/cpp2h.uhin` |
+| HindiC++ to C++ translator | `Hindawi/shraeni/h2cpp.uhin` |
+| C++ to HindiC++ translator | `Hindawi/shraeni/cpp2h.uhin` |
 | Compiler driver | `Hindawi/shraeni/shraenicc` |
 | Translator build rules | `Hindawi/shraeni/Makefile` |
-| Sample program | `Hindawi/samples/HindiC++.uhin` |
+| Dispatcher | `Hindawi/hindrv/hincc.awk` |
 
-## Style Dispatch
+## 2. Conformance
 
-HindiC++ programs use the Hindawi style marker `<शैली श्रेणी>` or its romanized internal equivalent `shraee_nnee>`. `hincc.awk` dispatches that style to `shraenicc`.
+A HindiC++ implementation shall provide:
 
-## Build Pipeline
+1. The `h2cpp` translator generated from `Hindawi/shraeni/h2cpp.uhin`.
+2. A compiler driver equivalent to `shraenicc`.
+3. A C++ compiler accepting the C++ source emitted by `h2cpp`.
+4. The Hindawi encoding filters used by the driver pipeline.
 
-The `Hindawi/shraeni/Makefile` builds two Flex-based translators:
+A conforming HindiC++ program shall:
+
+1. Use the HindiC++ style directive before program text when compiled through `hincc`.
+2. Contain source text accepted by the HindiC++ lexical substitution rules.
+3. Translate to a C++ translation unit accepted by the selected C++ compiler.
+
+Behavior not specified by this document is the behavior of the emitted C++ program under the selected C++ implementation.
+
+## 3. Processing Model
+
+### 3.1 Style Dispatch
+
+When compiled through `hincc`, a HindiC++ source file shall begin with a style directive:
 
 ```text
-h2cpp.uhin -> iconv UTF-8 to UTF-16 -> uni2acii -> acii2cf -> h2cpp.lex -> flex -> h2cpp
-cpp2h.uhin -> iconv UTF-8 to UTF-16 -> uni2acii -> acii2cf -> cpp2h.lex -> flex -> cpp2h
+<शैली श्रेणी>
 ```
 
-## Compile Pipeline
-
-`shraenicc` compiles a HindiC++ source file with this pipeline:
+After normalization to the internal Hindawi representation, the dispatcher recognizes the equivalent style token:
 
 ```text
-input .uhin -> acii2uni -> iconv UTF-16 to UTF-8 -> h2cpp -> tempfil0123.tmphin.cpp -> g++ -> hin.exe
+shraee_nnee>
 ```
 
-Compiler diagnostics are appended to `tempfil0123.tmphin`, printed, and then that diagnostics file is removed. The generated C++ source file remains as `tempfil0123.tmphin.cpp`.
+The dispatcher invokes `shraenicc` for this style.
 
-## Lexical Rules
+### 3.2 Translation Pipeline
 
-The translator preserves single-quoted and double-quoted literals before keyword replacement. All mapped tokens below are emitted with direct `printf` substitutions from the Flex rules.
+The compiler driver performs this translation:
 
-## HindiC++ To C++ Mapping
+```text
+HindiC++ source
+  -> acii2uni
+  -> iconv UTF-16 to UTF-8
+  -> h2cpp
+  -> tempfil0123.tmphin.cpp
+  -> g++
+  -> hin.exe
+```
 
-Generated from `Hindawi/shraeni/h2cpp.uhin`.
+The translator `h2cpp` is a Flex scanner. It does not parse C++ grammar. It performs lexical substitution and passes unmatched text through according to the generated scanner behavior.
 
-| HindiC++ token or pattern | C++ output |
+### 3.3 Reverse Translation
+
+The reverse translator `cpp2h` maps supported C++ tokens to HindiC++ tokens. It is a source translation aid, not a semantic validator.
+
+## 4. Source File
+
+A HindiC++ source file is a text file accepted by the Hindawi driver pipeline. The repository sample files use the `.uhin` extension.
+
+The driver expects the source to be readable by the Hindawi Unicode and internal-encoding filters. Source code entering `h2cpp` is UTF-8 text.
+
+## 5. Lexical Model
+
+### 5.1 Token Replacement
+
+HindiC++ translation is defined as lexical replacement over a token stream.
+
+For every HindiC++ terminal defined by `h2cpp.uhin`, the translator shall emit the corresponding C++ terminal. For tokens not matched by a HindiC++ terminal rule, the scanner default behavior applies.
+
+### 5.2 String And Character Literals
+
+Single-quoted and double-quoted literals are preserved before keyword replacement.
+
+Consequently, HindiC++ keywords appearing inside character or string literals shall not be translated.
+
+### 5.3 Identifiers
+
+Identifiers that are not HindiC++ reserved terminals are preserved by the scanner behavior. A program may use Hindi identifiers when the emitted C++ compiler accepts the resulting source after translation.
+
+### 5.4 Whitespace
+
+Whitespace has the same syntactic role as in the emitted C++ translation unit.
+
+### 5.5 Comments
+
+HindiC++ does not define an independent comment syntax in Shaili Shraeni beyond tokens that are emitted to C++ by the scanner or preserved as unmatched input. C++ comment syntax may be used where it passes through to the emitted C++ program.
+
+## 6. Syntax
+
+HindiC++ syntax is C++ syntax after replacing HindiC++ terminals with their C++ equivalents.
+
+This specification therefore defines HindiC++ grammar by translation:
+
+```text
+hindi-cpp-translation-unit:
+    optional-style-directive hindi-cpp-token-sequence
+
+hindi-cpp-token-sequence:
+    sequence of terminals which, after HindiC++ lexical replacement,
+    forms a valid C++ translation unit
+```
+
+The grammar, overload resolution, object model, template semantics, exception semantics, access control, linkage, storage duration, and undefined behavior rules are those of the selected C++ compiler for the emitted C++ source.
+
+## 7. Preprocessing
+
+HindiC++ supports C/C++ preprocessing directives by terminal substitution:
+
+| HindiC++ | C++ |
 | --- | --- |
-| मुख्य | main |
-| भाग\\.स | alloc.h |
-| निश्चित\\.स | assert.h |
-| मूलप्रण\\.स | bios.h |
-| पट्टपन\\.स | conio.h |
-| प्रकार\\.स | ctype.h |
-| सूची\\.स | dir.h |
-| डॉस\\.स | dos.h |
-| त्रुटिसं\\.स | errno.h |
-| भग्न\\.स | float.h |
-| पन\\.स | io.h |
-| सीमा\\.स | limits.h |
-| क्षेत्र\\.स | locale.h |
-| गणित\\.स | math.h |
-| स्मृति\\.स | mem.h |
-| क्रिया\\.स | process.h |
-| समलाँघ\\.स | setjmp.h |
-| संकेत\\.स | signal.h |
-| मानकतर्क\\.स | stdarg.h |
-| मानकघोष\\.स | stddef.h |
-| मानकपन\\.स | stdio.h |
-| मानककोष\\.स | stdlib.h |
-| माला\\.स | string.h |
-| स्थिति\\.स | stat.h |
-| समय\\.स | time.h |
-| ब_समय\\.स | timeb.h |
-| अणु | { |
-| पूर्ण | } |
-| orictxt832 | \|= |
-| orictxt833 | \|\| |
-| orictxt835 | ~ |
-| orictxt1 | ! |
-| orictxt2 | != |
-| orictxt5 | # |
-| orictxt6 | ## |
-| \\#घोषणा | #define |
-| \\#या_अगर | #elif |
-| \\#अन्यथा | #else |
-| \\#पूर्ण_अगर | #endif |
-| \\#त्रुटि | #error |
-| \\#अगर | #if |
-| \\#अगर_घोषित | #ifdef |
-| \\#अगर_अघोषित | #ifndef |
-| \\#समावेश | #include |
-| \\#पंक्ति | #line |
-| \\#आशय | #pragma |
-| \\#अघोषित | #undef |
-| orictxt21 | % |
-| orictxt22 | %= |
-| orictxt23 | & |
-| orictxt24 | && |
-| orictxt25 | &= |
-| orictxt26 | * |
-| orictxt27 | *= |
-| orictxt28 | + |
-| orictxt29 | ++ |
-| orictxt30 | += |
-| orictxt31 | - |
-| orictxt32 | -- |
-| orictxt33 | -= |
-| orictxt34 | -\> |
-| orictxt35 | -\>* |
-| orictxt36 | . |
-| orictxt37 | .* |
-| orictxt38 | / |
-| orictxt39 | /= |
-| orictxt40 | :: |
-| orictxt41 | \< |
-| orictxt42 | \<\< |
-| orictxt43 | \<\<= |
-| orictxt44 | \> |
-| orictxt45 | \>\> |
-| orictxt46 | \>\>= |
-| orictxt47 | ?: |
-| orictxt57 | ARG_MAX |
-| orictxt58 | B0 |
-| orictxt59 | B110 |
-| orictxt60 | B1200 |
-| orictxt61 | B134 |
-| orictxt62 | B150 |
-| orictxt63 | B1800 |
-| orictxt64 | B19200 |
-| orictxt65 | B200 |
-| orictxt66 | B2400 |
-| orictxt67 | B300 |
-| orictxt68 | B38400 |
-| orictxt69 | B4800 |
-| orictxt70 | B50 |
-| orictxt71 | B600 |
-| orictxt72 | B75 |
-| orictxt73 | B9600 |
-| orictxt74 | BRKINT |
-| बफ_मान | BUFSIZ |
-| अक्षर_बिट | CHAR_BIT |
-| अक्षर_उच्च | CHAR_MAX |
-| अक्षर_न्यून | CHAR_MIN |
-| शिशु_उच्च | CHILD_MAX |
-| घड़ी_टिक | CLK_TCK |
-| orictxt81 | CLOCAL |
-| orictxt82 | CLOCKS_PER_SEC |
-| orictxt83 | CREAD |
-| orictxt84 | CS5 |
-| orictxt85 | CS6 |
-| orictxt86 | CS7 |
-| orictxt87 | CS8 |
-| orictxt88 | CSIZE |
-| orictxt89 | CSTOPB |
-| द्विग_भग्न | DBL_DIG |
-| द्विग_अंतर | DBL_EPSILON |
-| द्विग_पूर्ण | DBL_MANT_DIG |
-| द्विग_उच्च | DBL_MAX |
-| orictxt94 | DBL_MAX_10_EXP |
-| orictxt95 | DBL_MAX_EXP |
-| द्विग_न्यून | DBL_MIN |
-| orictxt97 | DBL_MIN_10_EXP |
-| orictxt98 | DBL_MIN_EXP |
-| सूची | DIR |
-| orictxt100 | E2BIG |
-| orictxt101 | EACCESS |
-| orictxt102 | EAGAIN |
-| orictxt103 | EBADF |
-| orictxt104 | EBUSY |
-| orictxt105 | ECHILD |
-| orictxt106 | ECHO |
-| orictxt107 | ECHOE |
-| orictxt108 | ECHOK |
-| orictxt109 | ECHONL |
-| orictxt110 | EDEADLK |
-| गलत_तर्क | EDOM |
-| orictxt112 | EEXIST |
-| orictxt113 | EFAULT |
-| orictxt114 | EFBIG |
-| orictxt115 | EINTR |
-| orictxt116 | EINVAL |
-| orictxt117 | EIO |
-| orictxt118 | EISDIR |
-| orictxt119 | EMFILE |
-| orictxt120 | EMLINK |
-| orictxt121 | ENAMETOOLONG |
-| orictxt122 | ENFILE |
-| orictxt123 | ENODEV |
-| orictxt124 | ENOENT |
-| orictxt125 | ENOEXEC |
-| orictxt126 | ENOLCK |
-| orictxt127 | ENOMEM |
-| orictxt128 | ENOSPC |
-| orictxt129 | ENOTDIR |
-| orictxt130 | ENOTEMPTY |
-| orictxt131 | ENOTTY |
-| orictxt132 | ENXIO |
-| खातापूर्ण | EOF |
-| orictxt134 | EPERM |
-| orictxt135 | EPIPE |
-| दुस्फल | ERANGE |
-| orictxt137 | EROFS |
-| orictxt138 | ESPIPE |
-| orictxt139 | ESRCH |
-| orictxt140 | EXDEV |
-| निकास_त्रुटि | EXIT_FAILURE |
-| निकास_सफल | EXIT_SUCCESS |
-| orictxt143 | FD_CLOEXEC |
-| orictxt144 | FE_ALL_EXCEPT |
-| orictxt145 | FE_DBLPREC |
-| orictxt146 | FE_DIVBYZERO |
-| orictxt147 | FE_DOWNWARD |
-| orictxt148 | FE_FLTPREC |
-| orictxt149 | FE_INEXACT |
-| orictxt150 | FE_INVALID |
-| orictxt151 | FE_LDBLPREC |
-| orictxt152 | FE_OVERFLOW |
-| orictxt153 | FE_TONEAREST |
-| orictxt154 | FE_TOWARDZERO |
-| orictxt155 | FE_UNDERFLOW |
-| orictxt156 | FE_UPWARD |
-| खाता | FILE |
-| खातानाम_उच्च | FILENAME_MAX |
-| भग्न_भग्न | FLT_DIG |
-| भग्न_अंतर | FLT_EPSILON |
-| भग्न_पूर्ण | FLT_MANT_DIG |
-| भग्न_उच्च | FLT_MAX |
-| orictxt163 | FLT_MAX_10_EXP |
-| orictxt164 | FLT_MAX_EXP |
-| भग्न_न्यून | FLT_MIN |
-| orictxt166 | FLT_MIN_10_EXP |
-| orictxt167 | FLT_MIN_EXP |
-| भग्न_आधार | FLT_RADIX |
-| orictxt169 | FLT_ROUNDS |
-| ख_खोलो_उच्च | FOPEN_MAX |
-| orictxt171 | FP_INFINITE |
-| orictxt172 | FP_NANQ |
-| orictxt173 | FP_NANS |
-| orictxt174 | FP_NORMAL |
-| orictxt175 | FP_SUBNORMAL |
-| orictxt176 | FP_ZERO |
-| orictxt177 | F_DUPFD |
-| orictxt178 | F_GETFD |
-| orictxt179 | F_GETFL |
-| orictxt180 | F_GETLK |
-| orictxt181 | F_OK |
-| orictxt182 | F_RDLCK |
-| orictxt183 | F_SETFD |
-| orictxt184 | F_SETFL |
-| orictxt185 | F_SETLK |
-| orictxt186 | F_SETLKW |
-| orictxt187 | F_UNLCK |
-| orictxt188 | F_WRLCK |
-| विशाल_मान | HUGE_VAL |
-| orictxt190 | HUPCL |
-| orictxt191 | ICANON |
-| orictxt192 | ICRNL |
-| orictxt193 | IEXTEN |
-| orictxt194 | IGNBRK |
-| orictxt195 | IGNCR |
-| orictxt196 | IGNLCR |
-| orictxt197 | IGNPAR |
-| अनन्त | INFINITY |
-| orictxt199 | INPCK |
-| पूर्णांक_उच्च | INT_MAX |
-| पूर्णांक_न्यून | INT_MIN |
-| orictxt202 | ISIG |
-| orictxt203 | ISTRIP |
-| orictxt204 | IXOFF |
-| orictxt205 | IXON |
-| orictxt206 | LC_ALL |
-| orictxt207 | LC_COLLATE |
-| orictxt208 | LC_CTYPE |
-| orictxt209 | LC_MONETARY |
-| orictxt210 | LC_NUMERIC |
-| orictxt211 | LC_TIME |
-| द_द्वि_भग्न | LDBL_DIG |
-| द_द्वि_अंतर | LDBL_EPSILON |
-| द_द्वि_पूर्ण | LDBL_MANT_DIG |
-| द_द्वि_उच्च | LDBL_MAX |
-| orictxt221 | LDBL_MAX_10_EXP |
-| orictxt223 | LDBL_MAX_EXP |
-| द_द्वि_न्यून | LDBL_MIN |
-| orictxt227 | LDBL_MIN_10_EXP |
-| orictxt229 | LDBL_MIN_EXP |
-| दीर्घ_उच्च | LONG_MAX |
-| दीर्घ_न्यून | LONG_MIN |
-| orictxt233 | L_ctermid |
-| ब_क्षणिक | L_tmpnam |
-| orictxt235 | MAX_CANON |
-| orictxt236 | MAX_INPUT |
-| orictxt237 | MB_CUR_MAX |
-| orictxt238 | MB_LEN_MAX |
-| orictxt239 | NAME_MAX |
-| न_अंक | NAN |
-| orictxt241 | NANS |
-| orictxt242 | NCCS |
-| न_संशोधन | NDEBUG |
-| orictxt244 | NGROUPS_MAX |
-| orictxt245 | NOFLSH |
-| शून्य | NULL |
-| orictxt247 | OPEN_MAX |
-| orictxt248 | OPOST |
-| orictxt249 | O_ACCMODE |
-| orictxt250 | O_APPEND |
-| orictxt251 | O_CREAT |
-| orictxt252 | O_EXCL |
-| orictxt253 | O_NOCTTY |
-| orictxt254 | O_NONBLOCK |
-| orictxt255 | O_RDONLY |
-| orictxt256 | O_RDWR |
-| orictxt257 | O_TRUNC |
-| orictxt258 | O_WRONLY |
-| orictxt259 | PARENB |
-| orictxt260 | PARMRK |
-| orictxt261 | PARODD |
-| orictxt262 | PATH_MAX |
-| orictxt263 | PIPE_BUF |
-| अक्रम_उच्च | RAND_MAX |
-| orictxt265 | R_OK |
-| orictxt266 | SA_NOCLDSTOP |
-| च_अक्षर_उच्च | SCHAR_MAX |
-| च_अक्षर_न्यून | SCHAR_MIN |
-| प्रस्तुत_से | SEEK_CUR |
-| अंत_से | SEEK_END |
-| शुरू_से | SEEK_SET |
-| लघु_उच्च | SHRT_MAX |
-| लघु_न्यून | SHRT_MIN |
-| संक_पात | SIBGABRT |
-| orictxt275 | SIGARLM |
-| orictxt276 | SIGCHLD |
-| orictxt277 | SIGCONT |
-| संक_भ_त्रुटि | SIGFPE |
-| orictxt279 | SIGHUP |
-| संक_अवैध | SIGILL |
-| संक_विघ्न | SIGINT |
-| orictxt282 | SIGKILL |
-| orictxt283 | SIGPIPE |
-| orictxt284 | SIGQUIT |
-| संक_अंश | SIGSEGV |
-| orictxt286 | SIGSTOP |
-| संक_इति | SIGTERM |
-| orictxt288 | SIGTSTP |
-| orictxt289 | SIGTTIN |
-| orictxt290 | SIGTTOU |
-| orictxt291 | SIGUSR1 |
-| orictxt292 | SIGUSR2 |
-| orictxt293 | SIG_BLOCK |
-| संक_पूर्व | SIG_DFL |
-| संक_त्रुटि | SIG_ERR |
-| संक_छोड़ो | SIG_IGN |
-| orictxt297 | SIG_SETMASK |
-| orictxt298 | SIG_UNBLOCK |
-| orictxt299 | SSIZE_MAX |
-| orictxt300 | STDERR_FILENO |
-| orictxt301 | STDIN_FILENO |
-| orictxt302 | STDOUT_FILENO |
-| orictxt303 | STREAM_MAX |
-| orictxt304 | S_IRGRP |
-| orictxt305 | S_IROTH |
-| orictxt306 | S_IRUSR |
-| orictxt307 | S_IRWXG |
-| orictxt308 | S_IRWXO |
-| orictxt309 | S_IRWXU |
-| orictxt310 | S_ISBLK |
-| orictxt311 | S_ISCHR |
-| orictxt312 | S_ISDIR |
-| orictxt313 | S_ISFIFO |
-| orictxt314 | S_ISGID |
-| orictxt315 | S_ISREGSUID |
-| orictxt316 | S_IWGRP |
-| orictxt317 | S_IWOTH |
-| orictxt318 | S_IWUSR |
-| orictxt319 | S_IXGRP |
-| orictxt320 | S_IXOTH |
-| orictxt321 | S_IXUSR |
-| orictxt322 | ScreenMode |
-| orictxt323 | TCIFLUSH |
-| orictxt324 | TCIOFF |
-| orictxt325 | TCIOFLUSH |
-| orictxt326 | TCION |
-| orictxt327 | TCOFF |
-| orictxt328 | TCOFLUSH |
-| orictxt329 | TCOON |
-| orictxt330 | TCSADRAIN |
-| orictxt331 | TCSAFLUSH |
-| orictxt332 | TCSANOW |
-| क्षणिक_उच्च | TMP_MAX |
-| orictxt334 | TOSTOP |
-| orictxt335 | TZNAME_MAX |
-| अच_अक्षर_उच्च | UCHAR_MAX |
-| अच_पूर्णांक_उच्च | UINT_MAX |
-| अच_दीर्घ_उच्च | ULONG_MAX |
-| अच_लघु_उच्च | USHRT_MAX |
-| orictxt340 | VEOF |
-| orictxt341 | VEOL |
-| orictxt342 | VERASE |
-| orictxt343 | VINTR |
-| orictxt344 | VKILL |
-| orictxt345 | VMIN |
-| orictxt346 | VQUIT |
-| orictxt347 | VSTART |
-| orictxt348 | VSTOP |
-| orictxt349 | VSUSP |
-| orictxt350 | VTIME |
-| orictxt351 | WEXITSTATUS |
-| orictxt352 | WIFEXITED |
-| orictxt353 | WIFSIGNALED |
-| orictxt354 | WIFSTOPPED |
-| orictxt355 | WNOHANG |
-| orictxt356 | WSTOPSIG |
-| orictxt357 | WTERMSIG |
-| orictxt358 | WUNTRACED |
-| orictxt359 | W_OK |
-| orictxt360 | X_OK |
-| orictxt361 | [ |
-| orictxt362 | [] |
-| orictxt363 | \\\\ |
-| orictxt364 | \\\\\\" |
-| orictxt365 | \\\\\\' |
-| orictxt366 | \\\\\\? |
-| orictxt367 | \\\\\\\\ |
-| \\\\च | \\\\a |
-| \\\\म | \\\\b |
-| \\\\प | \\\\f |
-| \\\\न | \\\\n |
-| \\\\ल | \\\\r |
-| \\\\ट | \\\\t |
-| \\\\ख | \\\\v |
-| \\\\ष | \\\\x |
-| orictxt376 | ] |
-| orictxt378 | ^ |
-| orictxt379 | ^= |
-| orictxt380 | _8087 |
-| orictxt381 | _IOFBF |
-| orictxt382 | _IOLBF |
-| orictxt383 | _IONBF |
-| orictxt384 | _PC_CHOWN_RESTRICTED |
-| orictxt385 | _PC_MAX_CANON |
-| orictxt386 | _PC_MAX_INPUT |
-| orictxt387 | _PC_NAME_MAX |
-| orictxt388 | _PC_NO_TRUNC |
-| orictxt389 | _PC_PATH_MAX |
-| orictxt390 | _PC_PIPE_BUF |
-| orictxt391 | _PC_VDISABLE |
-| orictxt392 | _POSIX_ARG_MAX |
-| orictxt393 | _POSIX_CHILD_MAX |
-| orictxt394 | _POSIX_CHOWN_RESTRICTED |
-| orictxt395 | _POSIX_JOB_CONTROL |
-| orictxt396 | _POSIX_LINK_MAX |
-| orictxt397 | _POSIX_MAX_CANON |
-| orictxt398 | _POSIX_MAX_INPUT |
-| orictxt399 | _POSIX_NAME_MAX |
-| orictxt400 | _POSIX_NGROUPS_MAX |
-| orictxt401 | _POSIX_NO_TRUNC |
-| orictxt402 | _POSIX_OPEN_MAX |
-| orictxt403 | _POSIX_PATH_MAX |
-| orictxt404 | _POSIX_SAVED_IDS |
-| orictxt405 | _POSIX_SSIZE_MAX |
-| orictxt406 | _POSIX_STREAM_MAX |
-| orictxt407 | _POSIX_TZNAME_MAX |
-| orictxt408 | _POSIX_VDISABLE |
-| orictxt409 | _POSIX_VERSION |
-| orictxt410 | _SC_ARG_MAX |
-| orictxt411 | _SC_CHILD_MAX |
-| orictxt412 | _SC_CLK_TCK |
-| orictxt413 | _SC_JOB_CONTROL |
-| orictxt414 | _SC_NGROUPS_MAX |
-| orictxt415 | _SC_OPEN_MAX |
-| orictxt416 | _SC_SAVED_IDS |
-| orictxt417 | _SC_STREAM_MAX |
-| orictxt418 | _SC_TZNAME_MAX |
-| orictxt419 | _SC_VERSION |
-| __दिन__ | __DATE__ |
-| __खाता__ | __FILE__ |
-| orictxt422 | __FPCE_IEEE__ |
-| orictxt423 | __FPCE__ |
-| __पंक्ति__ | __LINE__ |
-| __मानक__ | __STDC__ |
-| __समय__ | __TIME__ |
-| orictxt427 | _atold |
-| _निकास | _exit |
-| orictxt429 | _stklen |
-| पात | abort |
-| असल | abs |
-| orictxt432 | access |
-| orictxt433 | acos |
-| orictxt434 | alarm |
-| orictxt435 | alarm |
-| orictxt436 | alloca |
-| समय_ठीक | asctime |
-| orictxt438 | asctime |
-| orictxt439 | asin |
-| यंत्र | asm |
-| निश्चित | assert |
-| orictxt443 | atan |
-| orictxt444 | atan2 |
-| निकास_पर | atexit |
-| म_से_भ | atof |
-| म_से_प | atoi |
-| म_से_द | atol |
-| स्वतः | auto |
-| orictxt450 | basename |
-| अवरोध | break |
-| orictxt452 | brk |
-| द्वा_खोज | bsearch |
-| सुस्मृति | calloc |
-| हाल | case |
-| पकड़ो | catch |
-| orictxt457 | cc_t |
-| उच्चमान | ceil |
-| orictxt459 | cfgetispeed |
-| orictxt460 | cfgetospeed |
-| orictxt461 | cfsetispeed |
-| orictxt462 | cfsetospeed |
-| अक्षर | char |
-| स_बदलो | chdir |
-| orictxt465 | chmod |
-| orictxt466 | chown |
-| श्रेणी | class |
-| साफ_त्रुटि | clearerr |
-| घड़ी | clock |
-| घड़ी_प्रकार | clock_t |
-| बंद | close |
-| बंद_सूची | closedir |
-| स्थिर | const |
-| जारी | continue |
-| orictxt475 | cos |
-| orictxt476 | cosh |
-| orictxt477 | creat |
-| orictxt478 | crlf2nl |
-| orictxt479 | ctermid |
-| स_समय | ctime |
-| orictxt481 | cuserid |
-| शेष | default |
-| orictxt483 | defined |
-| मिटाओ | delete |
-| orictxt486 | dev_t |
-| स_अंतर | difftime |
-| स_नाम | dirname |
-| भाग | div |
-| भाग_प्रकार | div_t |
-| करो | do |
-| orictxt492 | dosmemget |
-| orictxt493 | dosmemput |
-| द्विगुन | double |
-| orictxt495 | dup |
-| orictxt496 | dup2 |
-| अन्यथा | else |
-| क्रमागत | enum |
-| त्रुटि_सं | errno |
-| orictxt500 | execl |
-| orictxt501 | execle |
-| orictxt502 | execlp |
-| orictxt503 | execv |
-| orictxt504 | execve |
-| orictxt505 | execvp |
-| निकास | exit |
-| orictxt507 | exp |
-| बाह्य | extern |
-| भ_असल | fabs |
-| orictxt510 | fcbt |
-| ख_बंद | fclose |
-| orictxt512 | fcntl |
-| orictxt513 | fcntl |
-| orictxt514 | fdopen |
-| orictxt515 | feclearexcepts |
-| orictxt516 | fegetenv |
-| orictxt517 | fegetexcept |
-| orictxt518 | fegetprec |
-| orictxt519 | fegetround |
-| orictxt520 | fenv_t |
-| ख_पूर्ण | feof |
-| orictxt522 | feprocentry |
-| orictxt523 | feprocexit |
-| orictxt524 | feraiseexcept |
-| ख_त्रुटि | ferror |
-| orictxt526 | fesetenv |
-| orictxt527 | fesetexcept |
-| orictxt528 | fesetprec |
-| orictxt529 | fesetround |
-| orictxt530 | fetestexcept |
-| orictxt531 | fexcept_t |
-| ख_साफ | fflush |
-| ख_अक्षर_लो | fgetc |
-| ख_स्थान_लो | fgetpos |
-| ख_माला_लो | fgets |
-| orictxt536 | fileno |
-| भग्न | float |
-| न्यूनमान | floor |
-| भ_शेष | fmod |
-| ख_खोलो | fopen |
-| क्रम | for |
-| विभाजन | fork |
-| orictxt543 | fpathconf |
-| orictxt544 | fpclassify |
-| ख_स्थान_प्रकार | fpos_t |
-| ख_लिखो | fprintf |
-| ख_अक्षर_दो | fputc |
-| ख_माला_दो | fputs |
-| ख_पढ़ो | fread |
-| मुक्त | free |
-| ख_व_खोलो | freopen |
-| orictxt553 | frexp |
-| मित्र | friend |
-| ख_पूछो | fscanf |
-| ख_जाओ | fseek |
-| ख_स्थान_दो | fsetpos |
-| ख_स्थिति | fstat |
-| orictxt559 | fsync |
-| ख_बताओ | ftell |
-| ख_डालो | fwrite |
-| अ_लो | getc |
-| orictxt565 | getcbrk |
-| अक्षर_लो | getchar |
-| orictxt568 | getcwd |
-| orictxt569 | getegid |
-| दो_पर्या | getenv |
-| orictxt571 | geteuid |
-| orictxt572 | getgid |
-| orictxt573 | getgrgid |
-| orictxt574 | getgrnam |
-| orictxt575 | getgroups |
-| orictxt576 | gethostname |
-| orictxt577 | getkey |
-| orictxt578 | getlogin |
-| orictxt579 | getpgrp |
-| orictxt580 | getpid |
-| orictxt581 | getppid |
-| orictxt582 | getpwnam |
-| orictxt583 | getpwuid |
-| माला_लो | gets |
-| orictxt585 | getuid |
-| orictxt586 | gid_t |
-| स_जमट | gmtime |
-| जाओ | goto |
-| अगर | if |
-| अंतरभूत | inline |
-| orictxt591 | ino_t |
-| पूर्णांक | int |
-| है_अक्षर_अंक | isalnum |
-| है_अक्षर | isalpha |
-| orictxt595 | isatty |
-| है_नियंत्रण | iscntrl |
-| है_अंक | isdigit |
-| है_सीमित | isfinite |
-| है_चित्र | isgraph |
-| है_छोटा | islower |
-| orictxt601 | isnan |
-| orictxt602 | isnormal |
-| है_अष्टक | isodigit |
-| है_छाप | isprint |
-| है_विराम | ispunct |
-| है_खाली | isspace |
-| है_बड़ा | isupper |
-| है_षष्ठादशक | isxdigit |
-| orictxt609 | itoa |
-| लाँघ_बफ | jmp_buf |
-| समाप्त | kill |
-| द_असल | labs |
-| स्था_बदल | lconv |
-| orictxt615 | ldexp |
-| द_भाग | ldiv |
-| द_भाग_प्रकार | ldiv_t |
-| orictxt618 | link |
-| क्षेत्र_बदलो | localeconv |
-| स_स्थानीय | localtime |
-| orictxt621 | log |
-| orictxt622 | log10 |
-| orictxt623 | log2 |
-| दीर्घ | long |
-| दीर्घ_लाँघ | longjmp |
-| orictxt626 | lseek |
-| दो_स्मृति | malloc |
-| orictxt628 | mblen |
-| orictxt629 | mbstowcs |
-| orictxt630 | mbtowc |
-| स_प्रथम | memchr |
-| स_भेद | memcmp |
-| स_नकल | memcpy |
-| स_हटाओ | memmove |
-| स_रखो | memset |
-| सूची_गढ़ो | mkdir |
-| orictxt637 | mkfifo |
-| स_गढ़ो | mktime |
-| orictxt639 | mode_t |
-| orictxt640 | modf |
-| नया | new |
-| orictxt642 | nlink_t |
-| orictxt643 | ntohl |
-| orictxt644 | ntohs |
-| orictxt645 | off_t |
-| दुरत्व | offsetof |
-| खोलो | open |
-| सूची_खोलो | opendir |
-| चालक | operator |
-| orictxt650 | passwd |
-| छोड़ो | pause |
-| orictxt652 | pclose |
-| लिखो_त्रुटि | perror |
-| orictxt654 | pid_t |
-| orictxt655 | pipe |
-| orictxt656 | popen |
-| घात | pow |
-| orictxt658 | pow2 |
-| म_लिखो | printf |
-| निजी | private |
-| रक्षित | protected |
-| orictxt662 | psignal |
-| सूचक_भेद_प्रकार | ptrdiff_t |
-| खुला | public |
-| अ_दो | putc |
-| अक्षर_दो | putchar |
-| माला_दो | puts |
-| क्विक | qsort |
-| उठाओ | raise |
-| अक्रम | rand |
-| orictxt674 | rand48 |
-| पढ़ो | read |
-| सूची_पढ़ो | readdir |
-| पुनः_स्मृति | realloc |
-| रेजिस्टर | register |
-| हटाओ | remove |
-| नाम | rename |
-| वापस | return |
-| शुरुआत | rewind |
-| सूची_शुरु | rewinddir |
-| सूची_हटाओ | rmdir |
-| orictxt687 | run_child |
-| म_पूछो | scanf |
-| रखो_बफ | setbuf |
-| orictxt690 | setenv |
-| orictxt691 | setgid |
-| बनाओ_लाँघ | setjmp |
-| रखो_क्षेत्र | setlocale |
-| orictxt694 | setpgid |
-| orictxt695 | setsid |
-| orictxt696 | setuid |
-| रखो_भबफ | setvbuf |
-| लघु | short |
-| संक_पूर्ण_प्रकार | sig_atomic_t |
-| orictxt700 | sigaction |
-| orictxt702 | sigaddset |
-| orictxt703 | sigemptyset |
-| orictxt704 | sigfillset |
-| orictxt705 | sigismember |
-| orictxt706 | sigjmp_buf |
-| orictxt707 | siglongjmp |
-| संकेत | signal |
-| चिन्हित | signed |
-| संक_बाकी | sigpending |
-| orictxt711 | sigprocmask |
-| orictxt712 | sigset_t |
-| orictxt713 | sigsetjmp |
-| संक_रोको | sigsuspend |
-| orictxt715 | sin |
-| orictxt716 | sinh |
-| माप_प्रकार | size_t |
-| माप | sizeof |
-| orictxt719 | sleep |
-| orictxt720 | speed_t |
-| प्र_लिखो | sprintf |
-| वर्ग_मूल | sqrt |
-| बेक्रम | srand |
-| माला_पूछो | sscanf |
-| orictxt725 | ssize_t |
-| orictxt726 | stackavail |
-| orictxt727 | stat |
-| orictxt728 | stat |
-| orictxt729 | statfs |
-| अटल | static |
-| मानक_त्रुटि | stderr |
-| मानक_निवेश | stdin |
-| मानक_निकास | stdout |
-| orictxt734 | stkcoll |
-| म_जोड़ो | strcat |
-| म_अक्षर | strchr |
-| म_भेद | strcmp |
-| orictxt738 | strcoll |
-| म_नकल | strcpy |
-| म_खोज | strcspn |
-| म_त्रुटि | strerror |
-| स_माला | strftime |
-| म_माप | strlen |
-| म_जोड़न | strncat |
-| म_भेदन | strncmp |
-| म_नकलन | strncpy |
-| orictxt747 | strpbrk |
-| म_खोजप | strrchr |
-| orictxt749 | strsep |
-| म_अखोज | strspn |
-| म_माला | strstr |
-| म_से_भग्न | strtod |
-| म_मोहर | strtok |
-| म_से_दीर्घ | strtol |
-| म_से_अदीर्घ | strtoul |
-| काष्ठा | struct |
-| orictxt763 | strxfrm |
-| चयन | switch |
-| orictxt765 | sync |
-| orictxt766 | sys_errlist |
-| orictxt767 | sys_nerr |
-| orictxt768 | sysconf |
-| प्रणाली | system |
-| orictxt770 | tan |
-| orictxt771 | tanh |
-| orictxt772 | tcdrain |
-| orictxt773 | tcflag_t |
-| orictxt774 | tcflow |
-| orictxt775 | tcflush |
-| orictxt776 | tcgetattr |
-| orictxt777 | tcgetpgrp |
-| orictxt778 | tcsendbreak |
-| orictxt779 | tcsetattr |
-| orictxt780 | tcsetpgrp |
-| ढाँचा | template |
-| orictxt782 | tempnam |
-| orictxt783 | terminate |
-| orictxt784 | termios |
-| यह | this |
-| फेंको | throw |
-| समय | time |
-| समय_प्रकार | time_t |
-| बार | times |
-| पंचाङ्ग\<br\>पंचांग | tm |
-| क्षणिक_ख | tmpfile |
-| क्षणिक | tmpnam |
-| छोटे | tolower |
-| बड़े | toupper |
-| प्रयास | try |
-| orictxt796 | ttyname |
-| प्रकार | typedef |
-| orictxt798 | tzset |
-| orictxt799 | uid_t |
-| orictxt800 | umask |
-| orictxt801 | uname |
-| orictxt802 | unexpected |
-| अक्षर_वापस | ungetc |
-| जोड़ | union |
-| orictxt805 | unlink |
-| अचिन्हित | unsigned |
-| orictxt807 | utime |
-| orictxt808 | utsname |
-| बहु_तर्क | va_arg |
-| बहु_पूर्ण | va_end |
-| बहु_सूची | va_list |
-| बहु_शुरू | va_start |
-| भख_लिखो | vfprintf |
-| भव | virtual |
-| व्योम | void |
-| अस्थिर | volatile |
-| भ_लिखो | vprintf |
-| भम_लिखो | vsprintf |
-| रुको | wait |
-| orictxt822 | waitpid |
-| ब_अक्षर_प्रकार | wchar_t |
-| orictxt824 | wcstombs |
-| orictxt825 | wctomb |
-| जबतक | while |
-| orictxt827 | wild |
-| ग_लिखो | write |
-| पनप्रवाह\\.स | iostream.h |
-| पनप्रवाह_स | iostream |
-| पन_प्रवाह | iostream |
-| अ_बाहर | cout |
-| अ_अंदर | cin |
-| डेसी | dec |
-| षष्ठ | hex |
-| अष्ट | oct |
-| खाली | ws |
-| प_पूर्ण | endl |
-| म_पूर्ण | ends |
-| सफाई | flush |
-| पुनः_पन_झंडे | resetiosflags |
-| रखो_आधार | setbase |
-| रखो_भरो | setfill |
-| रखो_पन_झंडे | setiosflags |
-| रखो_सटीक | setprecision |
-| रखो_चौड़ाई | setw |
-| पनप | ios |
-| छोड़ो_खाली | skipws |
-| बाँए | left |
-| दाँए | right |
-| वैज्ञानिक | scientific |
-| जड़ | fixed |
-| बड़ा | uppercase |
-| लिखो_आधार | showbase |
-| लिखो_बिंदु | showpoint |
-| लिखो_चिन्ह | showpos |
-| ब_प्रवाह | ostream |
-| अ_प्रवाह | istream |
-| खप्रवाह\\.स | fstream.h |
-| ख_प्रवाह | fstream |
-| अख_प्रवाह | ifstream |
-| म_लो | ins |
-| नत्थी | app |
-| अंत_पर | ate |
-| न_नया | nocreate |
-| न_प्रति | noreplace |
-| छाँटो | trunc |
-| बख_प्रवाह | ofstream |
-| म_दो | outs |
-| अ_त्रुटि | cerr |
-| लो | get |
-| दो | put |
-| ग_स्थान | seekg |
-| हार | fail |
-| खप | eof |
-| सफा | clear |
-| बुरा | bad |
-| अच्छा | good |
-| मप्रवाह\\.स | strstream.h |
-| मप्रवाह_स | sstream |
-| म_प्रवाह | strstream |
-| बम_प्रवाह | ostrstream |
-| अम_प्रवाह | istrstream |
-| लो_पंक्ति | getline |
-| orictxt883 | read |
-| orictxt884 | write |
-| द्विग | binary |
-| प_स्थान | seekp |
-| मानकपन | stdio |
-| समय_लो | gettime |
-| समय_रखो | settime |
+| `#समावेश` | `#include` |
+| `#घोषणा` | `#define` |
+| `#अगर` | `#if` |
+| `#अगर_घोषित` | `#ifdef` |
+| `#अगर_अघोषित` | `#ifndef` |
+| `#या_अगर` | `#elif` |
+| `#अन्यथा` | `#else` |
+| `#पूर्ण_अगर` | `#endif` |
+| `#त्रुटि` | `#error` |
+| `#पंक्ति` | `#line` |
+| `#आशय` | `#pragma` |
+| `#अघोषित` | `#undef` |
 
-## C++ To HindiC++ Mapping
+Header-name aliases include:
 
-Generated from `Hindawi/shraeni/cpp2h.uhin`.
-
-| C++ token or pattern | HindiC++ output |
+| HindiC++ | C++ |
 | --- | --- |
-| "_" | अ् |
-| main | मुख्य |
-| alloc\\.h | भाग.स |
-| assert\\.h | निश्चित.स |
-| bios\\.h | मूलप्रण.स |
-| conio\\.h | पट्टपन.स |
-| ctype\\.h | प्रकार.स |
-| dir\\.h | सूची.स |
-| dos\\.h | डॉस.स |
-| errno\\.h | त्रुटिसं.स |
-| float\\.h | भग्न.स |
-| io\\.h | पन.स |
-| limits\\.h | सीमा.स |
-| locale\\.h | क्षेत्र.स |
-| math\\.h | गणित.स |
-| mem\\.h | स्मृति.स |
-| process\\.h | क्रिया.स |
-| setjmp\\.h | समलाँघ.स |
-| signal\\.h | संकेत.स |
-| stdarg\\.h | मानकतर्क.स |
-| stddef\\.h | मानकघोष.स |
-| stdio\\.h | मानकपन.स |
-| stdlib\\.h | मानककोष.स |
-| string\\.h | माला.स |
-| stat\\.h | स्थिति.स |
-| time\\.h | समय.स |
-| timeb\\.h | ब_समय.स |
-| \\{ | अणु |
-| \\} | पूर्ण |
-| \\#define | #घोषणा |
-| \\#elif | #या_अगर |
-| \\#else | #अन्यथा |
-| \\#endif | #पूर्ण_अगर |
-| \\#error | #त्रुटि |
-| \\#if | #अगर |
-| \\#ifdef | #अगर_घोषित |
-| \\#ifndef | #अगर_अघोषित |
-| \\#include | #समावेश |
-| \\#line | #पंक्ति |
-| \\#pragma | #आशय |
-| \\#undef | #अघोषित |
-| BUFSIZ | बफ_मान |
-| CHAR_BIT | अक्षर_बिट |
-| CHAR_MAX | अक्षर_उच्च |
-| CHAR_MIN | अक्षर_न्यून |
-| CHILD_MAX | शिशु_उच्च |
-| CLK_TCK | घड़ी_टिक |
-| DBL_DIG | द्विग_भग्न |
-| DBL_EPSILON | द्विग_अंतर |
-| DBL_MANT_DIG | द्विग_पूर्ण |
-| DBL_MAX | द्विग_उच्च |
-| DBL_MIN | द्विग_न्यून |
-| DIR | सूची |
-| EDOM | गलत_तर्क |
-| EOF | खातापूर्ण |
-| ERANGE | दुस्फल |
-| EXIT_FAILURE | निकास_त्रुटि |
-| EXIT_SUCCESS | निकास_सफल |
-| FILE | खाता |
-| FILENAME_MAX | खातानाम_उच्च |
-| FLT_DIG | भग्न_भग्न |
-| FLT_EPSILON | भग्न_अंतर |
-| FLT_MANT_DIG | भग्न_पूर्ण |
-| FLT_MAX | भग्न_उच्च |
-| FLT_MIN | भग्न_न्यून |
-| FLT_RADIX | भग्न_आधार |
-| FOPEN_MAX | ख_खोलो_उच्च |
-| HUGE_VAL | विशाल_मान |
-| INFINITY | अनन्त |
-| INT_MAX | पूर्णांक_उच्च |
-| INT_MIN | पूर्णांक_न्यून |
-| LDBL_DIG | द_द्वि_भग्न |
-| LDBL_EPSILON | द_द्वि_अंतर |
-| LDBL_MANT_DIG | द_द्वि_पूर्ण |
-| LDBL_MAX | द_द्वि_उच्च |
-| LDBL_MIN | द_द्वि_न्यून |
-| LONG_MAX | दीर्घ_उच्च |
-| LONG_MIN | दीर्घ_न्यून |
-| L_tmpnam | ब_क्षणिक |
-| NAN | न_अंक |
-| NDEBUG | न_संशोधन |
-| NULL | शून्य |
-| RAND_MAX | अक्रम_उच्च |
-| SCHAR_MAX | च_अक्षर_उच्च |
-| SCHAR_MIN | च_अक्षर_न्यून |
-| SEEK_CUR | प्रस्तुत_से |
-| SEEK_END | अंत_से |
-| SEEK_SET | शुरू_से |
-| SHRT_MAX | लघु_उच्च |
-| SHRT_MIN | लघु_न्यून |
-| SIBGABRT | संक_पात |
-| SIGFPE | संक_भ_त्रुटि |
-| SIGILL | संक_अवैध |
-| SIGINT | संक_विघ्न |
-| SIGSEGV | संक_अंश |
-| SIGTERM | संक_इति |
-| SIG_DFL | संक_पूर्व |
-| SIG_ERR | संक_त्रुटि |
-| SIG_IGN | संक_छोड़ो |
-| TMP_MAX | क्षणिक_उच्च |
-| UCHAR_MAX | अच_अक्षर_उच्च |
-| UINT_MAX | अच_पूर्णांक_उच्च |
-| ULONG_MAX | अच_दीर्घ_उच्च |
-| USHRT_MAX | अच_लघु_उच्च |
-| \\\\a | \\\\च |
-| \\\\b | \\\\म |
-| \\\\f | \\\\प |
-| \\\\n | \\\\न |
-| \\\\r | \\\\ल |
-| \\\\t | \\\\ट |
-| \\\\v | \\\\ख |
-| \\\\x | \\\\ष |
-| __DATE__ | __दिन__ |
-| __FILE__ | __खाता__ |
-| __LINE__ | __पंक्ति__ |
-| __STDC__ | __मानक__ |
-| __TIME__ | __समय__ |
-| _exit | _निकास |
-| abort | पात |
-| abs | असल |
-| asctime | समय_ठीक |
-| asm | यंत्र |
-| assert | निश्चित |
-| atexit | निकास_पर |
-| atof | म_से_भ |
-| atoi | म_से_प |
-| atol | म_से_द |
-| auto | स्वतः |
-| break | अवरोध |
-| bsearch | द्वा_खोज |
-| calloc | सुस्मृति |
-| case | हाल |
-| catch | पकड़ो |
-| ceil | उच्चमान |
-| char | अक्षर |
-| chdir | स_बदलो |
-| class | श्रेणी |
-| clearerr | साफ_त्रुटि |
-| clock | घड़ी |
-| clock_t | घड़ी_प्रकार |
-| close | बंद |
-| closedir | बंद_सूची |
-| const | स्थिर |
-| continue | जारी |
-| ctime | स_समय |
-| default | शेष |
-| delete | मिटाओ |
-| difftime | स_अंतर |
-| dirname | स_नाम |
-| div | भाग |
-| div_t | भाग_प्रकार |
-| do | करो |
-| double | द्विगुन |
-| else | अन्यथा |
-| enum | क्रमागत |
-| errno | त्रुटि_सं |
-| exit | निकास |
-| extern | बाह्य |
-| fabs | भ_असल |
-| fclose | ख_बंद |
-| feof | ख_पूर्ण |
-| ferror | ख_त्रुटि |
-| fflush | ख_साफ |
-| fgetc | ख_अक्षर_लो |
-| fgetpos | ख_स्थान_लो |
-| fgets | ख_माला_लो |
-| float | भग्न |
-| floor | न्यूनमान |
-| fmod | भ_शेष |
-| fopen | ख_खोलो |
-| for | क्रम |
-| fork | विभाजन |
-| fpos_t | ख_स्थान_प्रकार |
-| fprintf | ख_लिखो |
-| fputc | ख_अक्षर_दो |
-| fputs | ख_माला_दो |
-| fread | ख_पढ़ो |
-| free | मुक्त |
-| freopen | ख_व_खोलो |
-| friend | मित्र |
-| fscanf | ख_पूछो |
-| fseek | ख_जाओ |
-| fsetpos | ख_स्थान_दो |
-| fstat | ख_स्थिति |
-| ftell | ख_बताओ |
-| fwrite | ख_डालो |
-| getc | अ_लो |
-| getchar | अक्षर_लो |
-| getenv | दो_पर्या |
-| gets | माला_लो |
-| gmtime | स_जमट |
-| goto | जाओ |
-| if | अगर |
-| inline | अंतरभूत |
-| int | पूर्णांक |
-| isalnum | है_अक्षर_अंक |
-| isalpha | है_अक्षर |
-| iscntrl | है_नियंत्रण |
-| isdigit | है_अंक |
-| isfinite | है_सीमित |
-| isgraph | है_चित्र |
-| islower | है_छोटा |
-| isodigit | है_अष्टक |
-| isprint | है_छाप |
-| ispunct | है_विराम |
-| isspace | है_खाली |
-| isupper | है_बड़ा |
-| isxdigit | है_षष्ठादशक |
-| jmp_buf | लाँघ_बफ |
-| kill | समाप्त |
-| labs | द_असल |
-| lconv | स्था_बदल |
-| ldiv | द_भाग |
-| ldiv_t | द_भाग_प्रकार |
-| localeconv | क्षेत्र_बदलो |
-| localtime | स_स्थानीय |
-| long | दीर्घ |
-| longjmp | दीर्घ_लाँघ |
-| malloc | दो_स्मृति |
-| memchr | स_प्रथम |
-| memcmp | स_भेद |
-| memcpy | स_नकल |
-| memmove | स_हटाओ |
-| memset | स_रखो |
-| mkdir | सूची_गढ़ो |
-| mktime | स_गढ़ो |
-| new | नया |
-| offsetof | दुरत्व |
-| open | खोलो |
-| opendir | सूची_खोलो |
-| operator | चालक |
-| pause | छोड़ो |
-| perror | लिखो_त्रुटि |
-| pow | घात |
-| printf | म_लिखो |
-| private | निजी |
-| protected | रक्षित |
-| ptrdiff_t | सूचक_भेद_प्रकार |
-| public | खुला |
-| putc | अ_दो |
-| putchar | अक्षर_दो |
-| puts | माला_दो |
-| qsort | क्विक |
-| raise | उठाओ |
-| rand | अक्रम |
-| read | पढ़ो |
-| readdir | सूची_पढ़ो |
-| realloc | पुनः_स्मृति |
-| register | रेजिस्टर |
-| remove | हटाओ |
-| rename | नाम |
-| return | वापस |
-| rewind | शुरुआत |
-| rewinddir | सूची_शुरु |
-| rmdir | सूची_हटाओ |
-| scanf | म_पूछो |
-| setbuf | रखो_बफ |
-| setjmp | बनाओ_लाँघ |
-| setlocale | रखो_क्षेत्र |
-| setvbuf | रखो_भबफ |
-| short | लघु |
-| sig_atomic_t | संक_पूर्ण_प्रकार |
-| signal | संकेत |
-| signed | चिन्हित |
-| sigpending | संक_बाकी |
-| sigsuspend | संक_रोको |
-| size_t | माप_प्रकार |
-| sizeof | माप |
-| sprintf | प्र_लिखो |
-| sqrt | वर्ग_मूल |
-| srand | बेक्रम |
-| sscanf | माला_पूछो |
-| static | अटल |
-| stderr | मानक_त्रुटि |
-| stdin | मानक_निवेश |
-| stdout | मानक_निकास |
-| strcat | म_जोड़ो |
-| strchr | म_अक्षर |
-| strcmp | म_भेद |
-| strcpy | म_नकल |
-| strcspn | म_खोज |
-| strerror | म_त्रुटि |
-| strftime | स_माला |
-| strlen | म_माप |
-| strncat | म_जोड़न |
-| strncmp | म_भेदन |
-| strncpy | म_नकलन |
-| strrchr | म_खोजप |
-| strspn | म_अखोज |
-| strstr | म_माला |
-| strtod | म_से_भग्न |
-| strtok | म_मोहर |
-| strtol | म_से_दीर्घ |
-| strtoul | म_से_अदीर्घ |
-| struct | काष्ठा |
-| switch | चयन |
-| system | प्रणाली |
-| template | ढाँचा |
-| this | यह |
-| throw | फेंको |
-| time | समय |
-| time_t | समय_प्रकार |
-| times | बार |
-| tm | पंचांग |
-| tmpfile | क्षणिक_ख |
-| tmpnam | क्षणिक |
-| tolower | छोटे |
-| toupper | बड़े |
-| try | प्रयास |
-| typedef | प्रकार |
-| ungetc | अक्षर_वापस |
-| union | जोड़ |
-| unsigned | अचिन्हित |
-| va_arg | बहु_तर्क |
-| va_end | बहु_पूर्ण |
-| va_list | बहु_सूची |
-| va_start | बहु_शुरू |
-| vfprintf | भख_लिखो |
-| virtual | भव |
-| void | व्योम |
-| volatile | अस्थिर |
-| vprintf | भ_लिखो |
-| vsprintf | भम_लिखो |
-| wait | रुको |
-| wchar_t | ब_अक्षर_प्रकार |
-| while | जबतक |
-| write | ग_लिखो |
-| iostream\\.h | पनप्रवाह.स |
-| iostream | पन_प्रवाह |
-| cout | अ_बाहर |
-| cin | अ_अंदर |
-| dec | डेसी |
-| hex | षष्ठ |
-| oct | अष्ट |
-| ws | खाली |
-| endl | प_पूर्ण |
-| ends | म_पूर्ण |
-| flush | सफाई |
-| resetiosflags | पुनः_पन_झंडे |
-| setbase | रखो_आधार |
-| setfill | रखो_भरो |
-| setiosflags | रखो_पन_झंडे |
-| setprecision | रखो_सटीक |
-| setw | रखो_चौड़ाई |
-| ios | पनप |
-| skipws | छोड़ो_खाली |
-| left | बाँए |
-| right | दाँए |
-| scientific | वैज्ञानिक |
-| fixed | जड़ |
-| uppercase | बड़ा |
-| showbase | लिखो_आधार |
-| showpoint | लिखो_बिंदु |
-| showpos | लिखो_चिन्ह |
-| ostream | ब_प्रवाह |
-| istream | अ_प्रवाह |
-| fstream\\.h | खप्रवाह.स |
-| fstream | ख_प्रवाह |
-| ifstream | अख_प्रवाह |
-| ins | म_लो |
-| app | नत्थी |
-| ate | अंत_पर |
-| nocreate | न_नया |
-| noreplace | न_प्रति |
-| trunc | छाँटो |
-| ofstream | बख_प्रवाह |
-| outs | म_दो |
-| cerr | अ_त्रुटि |
-| get | लो |
-| put | दो |
-| seekg | ग_स्थान |
-| fail | हार |
-| eof | खप |
-| clear | सफा |
-| bad | बुरा |
-| good | अच्छा |
-| strstream\\.h | मप्रवाह.स |
-| strstream | म_प्रवाह |
-| ostrstream | बम_प्रवाह |
-| istrstream | अम_प्रवाह |
-| getline | लो_पंक्ति |
-| binary | द्विग |
-| seekp | प_स्थान |
-| stdio | मानकपन |
-| settime | समय_रखो |
-| gettime | समय_लो |
+| `मानकपन.स` | `stdio.h` |
+| `मानककोष.स` | `stdlib.h` |
+| `माला.स` | `string.h` |
+| `गणित.स` | `math.h` |
+| `मानकघोष.स` | `stddef.h` |
+| `मानकतर्क.स` | `stdarg.h` |
+| `संकेत.स` | `signal.h` |
+| `समय.स` | `time.h` |
+| `पनप्रवाह.स` | `iostream.h` |
+| `पन_प्रवाह` | `iostream` |
+| `खप्रवाह.स` | `fstream.h` |
+| `मप्रवाह.स` | `strstream.h` |
+| `मप्रवाह_स` | `sstream` |
+
+The complete set of header aliases is the set of header-name rules in `h2cpp.uhin`.
+
+## 8. Declarations
+
+HindiC++ declaration syntax follows C++ declaration syntax after terminal replacement.
+
+Fundamental declaration terminals include:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `प्रकार` | `typedef` |
+| `बाह्य` | `extern` |
+| `अटल` | `static` |
+| `रेजिस्टर` | `register` |
+| `स्वतः` | `auto` |
+| `स्थिर` | `const` |
+| `अस्थिर` | `volatile` |
+| `अंतरभूत` | `inline` |
+| `मित्र` | `friend` |
+| `भव` | `virtual` |
+
+Type-name terminals include:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `व्योम` | `void` |
+| `अक्षर` | `char` |
+| `लघु` | `short` |
+| `पूर्णांक` | `int` |
+| `दीर्घ` | `long` |
+| `भग्न` | `float` |
+| `द्विगुन` | `double` |
+| `चिन्हित` | `signed` |
+| `अचिन्हित` | `unsigned` |
+| `माप_प्रकार` | `size_t` |
+| `ब_अक्षर_प्रकार` | `wchar_t` |
+
+Aggregate and user-defined type terminals include:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `काष्ठा` | `struct` |
+| `जोड़` | `union` |
+| `क्रमागत` | `enum` |
+| `श्रेणी` | `class` |
+| `ढाँचा` | `template` |
+
+## 9. Classes
+
+Class definitions, inheritance, member declarations, constructors, destructors, virtual functions, overloads, and templates follow C++ rules after terminal replacement.
+
+Access-specifier terminals are:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `खुला` | `public` |
+| `निजी` | `private` |
+| `रक्षित` | `protected` |
+
+Object-model terminals include:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `यह` | `this` |
+| `नया` | `new` |
+| `मिटाओ` | `delete` |
+| `चालक` | `operator` |
+
+## 10. Functions
+
+Function declarations and definitions follow C++ rules after terminal replacement.
+
+Common function-related terminals include:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `मुख्य` | `main` |
+| `वापस` | `return` |
+| `बहु_सूची` | `va_list` |
+| `बहु_शुरू` | `va_start` |
+| `बहु_तर्क` | `va_arg` |
+| `बहु_पूर्ण` | `va_end` |
+
+## 11. Statements
+
+HindiC++ statement syntax follows C++ statement syntax after terminal replacement.
+
+Statement terminals include:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `अगर` | `if` |
+| `अन्यथा` | `else` |
+| `चयन` | `switch` |
+| `हाल` | `case` |
+| `शेष` | `default` |
+| `क्रम` | `for` |
+| `जबतक` | `while` |
+| `करो` | `do` |
+| `अवरोध` | `break` |
+| `जारी` | `continue` |
+| `जाओ` | `goto` |
+| `वापस` | `return` |
+| `प्रयास` | `try` |
+| `पकड़ो` | `catch` |
+| `फेंको` | `throw` |
+
+## 12. Expressions And Operators
+
+Expression syntax and precedence are C++ expression syntax and precedence after terminal replacement.
+
+Most operator spellings are emitted through `orictxt` tokens in `h2cpp.uhin`. These tokens represent punctuation and operators that may be difficult to express directly through the Hindawi transliteration pipeline.
+
+Normative operator-token mappings include:
+
+| HindiC++ token | C++ |
+| --- | --- |
+| `orictxt1` | `!` |
+| `orictxt2` | `!=` |
+| `orictxt21` | `%` |
+| `orictxt22` | `%=` |
+| `orictxt23` | `&` |
+| `orictxt24` | `&&` |
+| `orictxt25` | `&=` |
+| `orictxt26` | `*` |
+| `orictxt27` | `*=` |
+| `orictxt28` | `+` |
+| `orictxt29` | `++` |
+| `orictxt30` | `+=` |
+| `orictxt31` | `-` |
+| `orictxt32` | `--` |
+| `orictxt33` | `-=` |
+| `orictxt34` | `->` |
+| `orictxt35` | `->*` |
+| `orictxt36` | `.` |
+| `orictxt37` | `.*` |
+| `orictxt38` | `/` |
+| `orictxt39` | `/=` |
+| `orictxt40` | `::` |
+| `orictxt41` | `<` |
+| `orictxt42` | `<<` |
+| `orictxt43` | `<<=` |
+| `orictxt44` | `>` |
+| `orictxt45` | `>>` |
+| `orictxt46` | `>>=` |
+| `orictxt47` | `?:` |
+| `orictxt832` | `|=` |
+| `orictxt833` | `||` |
+| `orictxt835` | `~` |
+
+The following punctuation tokens are also defined:
+
+| HindiC++ token | C++ |
+| --- | --- |
+| `अणु` | `{` |
+| `पूर्ण` | `}` |
+| `orictxt361` | `[` |
+| `orictxt362` | `[]` |
+| `orictxt376` | `]` |
+| `orictxt363` | `\` |
+| `orictxt364` | `\"` |
+| `orictxt365` | `\'` |
+| `orictxt366` | `\?` |
+| `orictxt367` | `\\` |
+
+## 13. Escape Sequences
+
+Escape sequence aliases are:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `\च` | `\a` |
+| `\म` | `\b` |
+| `\प` | `\f` |
+| `\न` | `\n` |
+| `\ल` | `\r` |
+| `\ट` | `\t` |
+| `\ख` | `\v` |
+| `\ष` | `\x` |
+
+## 14. Standard Library Names
+
+HindiC++ provides aliases for C and C++ standard library identifiers. These aliases are lexical substitutions and do not define library behavior independently of the selected C++ implementation.
+
+Representative library aliases include:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `म_लिखो` | `printf` |
+| `म_पूछो` | `scanf` |
+| `ख_खोलो` | `fopen` |
+| `ख_बंद` | `fclose` |
+| `ख_लिखो` | `fprintf` |
+| `ख_पूछो` | `fscanf` |
+| `म_माप` | `strlen` |
+| `म_नकल` | `strcpy` |
+| `म_भेद` | `strcmp` |
+| `दो_स्मृति` | `malloc` |
+| `मुक्त` | `free` |
+| `वर्ग_मूल` | `sqrt` |
+| `घात` | `pow` |
+| `प्रणाली` | `system` |
+
+C++ stream aliases include:
+
+| HindiC++ | C++ |
+| --- | --- |
+| `अ_बाहर` | `cout` |
+| `अ_अंदर` | `cin` |
+| `अ_त्रुटि` | `cerr` |
+| `प_पूर्ण` | `endl` |
+| `सफाई` | `flush` |
+| `ब_प्रवाह` | `ostream` |
+| `अ_प्रवाह` | `istream` |
+| `ख_प्रवाह` | `fstream` |
+| `अख_प्रवाह` | `ifstream` |
+| `बख_प्रवाह` | `ofstream` |
+| `लो_पंक्ति` | `getline` |
+
+The complete library alias vocabulary is the set of identifier rules in `h2cpp.uhin`.
+
+## 15. Predefined Macro Aliases
+
+| HindiC++ | C++ |
+| --- | --- |
+| `__दिन__` | `__DATE__` |
+| `__खाता__` | `__FILE__` |
+| `__पंक्ति__` | `__LINE__` |
+| `__मानक__` | `__STDC__` |
+| `__समय__` | `__TIME__` |
+
+## 16. Diagnostics
+
+`shraenicc` writes the emitted C++ source to:
+
+```text
+tempfil0123.tmphin.cpp
+```
+
+It invokes:
+
+```text
+g++ tempfil0123.tmphin.cpp -o hin.exe
+```
+
+Compiler diagnostics are appended to `tempfil0123.tmphin`, printed to standard output, and the diagnostics file is removed.
+
+Translation-time diagnostics are otherwise those produced by the scanner, encoding filters, shell pipeline, or selected C++ compiler.
+
+## 17. Output
+
+A successful compilation produces:
+
+```text
+hin.exe
+```
+
+The name is fixed by `shraenicc`; repeated compilations overwrite this file.
+
+## 18. Implementation-Defined Behavior
+
+The following are implementation-defined:
+
+1. The C++ language version selected by `g++`.
+2. The target ABI and platform behavior of the emitted executable.
+3. The exact handling of unmatched Unicode identifiers by the selected C++ compiler.
+4. The availability of legacy headers such as `iostream.h`, `fstream.h`, and `strstream.h`.
+5. The availability of POSIX and system identifiers represented by `orictxt` aliases.
+
+## 19. Non-Normative Example
+
+```text
+<शैली श्रेणी>
+#समावेश <मानकपन.स>
+
+श्रेणी उदाहरण
+{
+खुला:
+    भव व्योम लिखो()
+    {
+        म_लिखो("नमस्ते\n");
+    }
+};
+
+पूर्णांक मुख्य()
+{
+    उदाहरण उ;
+    उ.लिखो();
+    वापस 0;
+}
+```
+
+After HindiC++ lexical substitution, the program is compiled as C++ by `g++`.
